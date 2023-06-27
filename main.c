@@ -41,18 +41,14 @@ u64 num_colors(void) {
     return result;
 }
 
-Color *secret_init(Arena *arena) {
+void secret_init(Color secret_buffer[NUM_GUESS]) {
     u64 random_numbers[NUM_GUESS];
 
     ran_rand_range_arr(random_numbers, NUM_GUESS, 0, num_colors() - 1, true);
 
-    Color *result = arena_alloc(arena, NUM_GUESS);
-
     for (usize i = 0; i < NUM_GUESS; ++i) {
-        result[i] = random_numbers[i];
+        secret_buffer[i] = random_numbers[i];
     }
-
-    return result;
 }
 
 void hint(const Color *secret) {
@@ -66,7 +62,9 @@ i32 main(void) {
 
     arena_init(&arena);
 
-    Color *secret = secret_init(&arena);
+    Color secret[NUM_GUESS];
+
+    secret_init(secret);
 
     hint(secret);
 
