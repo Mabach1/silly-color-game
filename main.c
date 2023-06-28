@@ -37,7 +37,7 @@ const char *get_color_label(Color color) {
     return "undefined";
 }
 
-u64 num_colors(void) {
+const u64 num_colors(void) {
     u64 result = 0;
 
     for (Color color = 0; color < Undefined; ++color) {
@@ -50,14 +50,30 @@ u64 num_colors(void) {
 const usize row_max_len(void) {
     usize result = 0;
 
-    usize sizes[NUM_GUESS] = { 0 };
+    usize sizes[num_colors()];
 
-    for (usize i = 0; i < NUM_GUESS; ++i) {
-        for (Color color = 0; color < num_colors() - 1; ++color) {
-            if (strlen(get_color_label(color + 1)) > strlen(get_color_label(color)) && sizes[i] != strlen(get_color_label(color + 1))) {
-                sizes[i] = strlen(get_color_label((color + 1)));
+    for (Color c = 0; c < num_colors(); ++c) {
+        sizes[c] = strlen(get_color_label(c));
+    }
+
+    bool swaped = false;
+    
+    do {
+        swaped = false;
+
+        for (usize i = 0; i < num_colors() - 1; ++i) {
+            if (sizes[i] > sizes[i + 1]) {
+                usize temp = sizes[i];
+                sizes[i] = sizes[i + 1];
+                sizes[i + 1] = temp;
+
+                swaped = true;
             }
         }
+    } while (swaped);
+
+    for (usize i = num_colors() - NUM_GUESS; i < num_colors(); ++i) {
+        result += sizes[i];
     }
 
     return result;
@@ -212,12 +228,6 @@ void game_over(Color secret[]) {
 }
 
 i32 main(void) {
-    row_max_len();
-
-    return 0;
-
-    /*---------------------------------------*/
-
     Color secret[NUM_GUESS];
 
     secret_init(secret);
