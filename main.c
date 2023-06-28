@@ -160,19 +160,33 @@ bool player_guess(Color guess_buffer[NUM_GUESS]) {
     return true;
 }
 
-void game_over() {
+void game_over(Color secret[]) {
     ProgressCell *current_cell = &global_table.table[global_table.tries - 1];
+
+    bool over = false;
 
 
     if (global_table.tries >= NUM_TRIES) {
         fprintf(stdout, "You loss :(");
-        exit(EXIT_SUCCESS);
+
+        over = true;
     }
 
     if (NUM_GUESS == current_cell->correct) {
         fprintf(stdout, "You won :)");
-        exit(EXIT_SUCCESS);
+
+        over = true;
     }
+
+    if (!over) { return; }
+
+    fprintf(stdout, "\nCorrect combination: ");
+
+    for (usize i = 0; i < NUM_GUESS; ++i) {
+        fprintf(stdout, "%s ", get_color_label(secret[i]));
+    }
+
+    exit(EXIT_SUCCESS);
 }
 
 i32 main(void) {
@@ -214,7 +228,7 @@ i32 main(void) {
 
         push_guess(guess_buffer, correct, matched);
 
-        game_over();
+        game_over(secret);
 
         system("cls");
     }
