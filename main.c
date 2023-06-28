@@ -1,5 +1,7 @@
 #include "base/base.h"
 
+#include <stdlib.h>
+
 #define NUM_GUESS   (4)
 #define NUM_TRIES   (8)
 
@@ -59,6 +61,8 @@ void push_guess(Color guess[], u64 correct, u64 matched) {
 }
 
 void print_cell(ProgressCell cell) {
+    fprintf(stdout, "| ");
+
     for (usize i = 0; i < NUM_GUESS; ++i) {
         fprintf(stdout, "%s ", get_color_label(cell.guessed_colors[i]));
     }
@@ -154,6 +158,21 @@ bool player_guess(Color guess_buffer[NUM_GUESS]) {
     return true;
 }
 
+void game_over() {
+    ProgressCell *current_cell = &global_table.table[global_table.tries - 1];
+
+
+    if (global_table.tries >= NUM_TRIES) {
+        fprintf(stdout, "You loss :(");
+        exit(EXIT_SUCCESS);
+    }
+
+    if (NUM_GUESS == current_cell->correct) {
+        fprintf(stdout, "You won :)");
+        exit(EXIT_SUCCESS);
+    }
+}
+
 i32 main(void) {
     Color secret[NUM_GUESS];
 
@@ -161,36 +180,40 @@ i32 main(void) {
 
     hint(secret);
 
-    Color guess_buffer[NUM_GUESS];
+    while (true) {
+        display_progress();
 
-    player_guess(guess_buffer);
+        Color guess_buffer[NUM_GUESS];
 
-    u64 correct = 0;
-    u64 matched = 0;
+        player_guess(guess_buffer);
 
-    typedef enum { Wrong, Correct } Guess;
+        u64 correct = 0;
+        u64 matched = 0;
 
-    Guess result[NUM_GUESS] = { Wrong };
+        typedef enum { Wrong, Correct } Guess;
 
-    for (usize i = 0; i < NUM_GUESS; ++i) {
-        if (guess_buffer[i] == secret[i]) {
-            result[i] = Correct;
-            correct++;
-            continue;
-        }
+        Guess result[NUM_GUESS] = { Wrong };
 
-        for (usize j = 0; j < NUM_GUESS; ++j) {
-            if (Correct != result[j] && guess_buffer[i] == secret[j]) {
-                matched++;
+        for (usize i = 0; i < NUM_GUESS; ++i) {
+            if (guess_buffer[i] == secret[i]) {
+                result[i] = Correct;
+                correct++;
+                continue;
+            }
+
+            for (usize j = 0; j < NUM_GUESS; ++j) {
+                if (Correct != result[j] && guess_buffer[i] == secret[j]) {
+                    matched++;
+                }
             }
         }
+
+        push_guess(guess_buffer, correct, matched);
+
+        game_over();
+
+        system("cls");
     }
-
-    push_guess(guess_buffer, correct, matched);
-    push_guess(guess_buffer, correct + 1, matched);
-    push_guess(guess_buffer, correct + 2, matched);
-
-    display_progress();
 
     return 0;
 }
