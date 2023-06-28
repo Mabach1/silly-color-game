@@ -2,6 +2,8 @@
 
 #include <stdlib.h>
 
+#define _HINT
+
 #define NUM_GUESS   (4)
 #define NUM_TRIES   (8)
 
@@ -178,7 +180,9 @@ i32 main(void) {
 
     secret_init(secret);
 
+#ifdef HINT
     hint(secret);
+#endif 
 
     while (true) {
         display_progress();
