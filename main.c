@@ -124,16 +124,36 @@ i32 main(void) {
 
     hint(secret);
 
-    Color guess[NUM_GUESS];
+    Color guess_buffer[NUM_GUESS];
 
-    player_guess(guess);
+    player_guess(guess_buffer);
 
     for (usize i = 0; i < NUM_GUESS; ++i) {
-        fprintf(stdout, "%s ", get_color_label(guess[i]));
+        fprintf(stdout, "%s ", get_color_label(guess_buffer[i]));
     }
 
-    // TODO:
-    // calculate the mathced and correct and pushed them into the global array
+    u64 correct = 0;
+    u64 matched = 0;
+
+    typedef enum { Wrong, Correct } Guess;
+
+    Guess result[NUM_GUESS] = { Wrong };
+
+    for (usize i = 0; i < NUM_GUESS; ++i) {
+        if (guess_buffer[i] == secret[i]) {
+            result[i] = Correct;
+            correct++;
+            continue;
+        }
+
+        for (usize j = 0; j < NUM_GUESS; ++j) {
+            if (Correct != result[j] && guess_buffer[i] == secret[j]) {
+                matched++;
+            }
+        }
+    }
+
+    fprintf(stdout, "\nmatched: %llu, correct: %llu", matched, correct);
 
     arena_deinit(&arena);
 
