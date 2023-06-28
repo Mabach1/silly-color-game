@@ -211,7 +211,7 @@ void player_guess(Color guess_buffer[NUM_GUESS]) {
 
         for (usize i = 0; i < NUM_GUESS; ++i) {
             if (!check_input(colors.arr[i], colors, i)) {
-                string_print_format("Uknown color: %\n", colors.arr[i]);
+                string_print_format("Duplicate or unknown color: %\n", colors.arr[i]);
                 all_good = false;  
             }
         }
