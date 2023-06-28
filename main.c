@@ -1,6 +1,7 @@
 #include "base/base.h"
 
 #define NUM_GUESS   (4)
+#define NUM_TRIES   (8)
 
 typedef enum {
     Red,
@@ -29,6 +30,46 @@ const char *get_color_label(Color color) {
     }
 
     return "undefined";
+}
+
+typedef struct {
+    Color guessed_colors[NUM_GUESS];
+    u64 correct;
+    u64 matched;
+} ProgressCell;
+
+typedef struct {
+    usize tries;
+    ProgressCell table[NUM_TRIES];
+} ProgressTable;
+
+ProgressTable global_table = { .tries = 0 };
+
+void push_guess(Color guess[], u64 correct, u64 matched) {
+    ProgressCell currect_cell;
+
+    currect_cell.correct = correct;
+    currect_cell.matched = matched;
+
+    for (usize i = 0; i < NUM_GUESS; ++i) {
+        currect_cell.guessed_colors[i] = guess[i];
+    }
+
+    global_table.table[global_table.tries++] = currect_cell;
+}
+
+void print_cell(ProgressCell cell) {
+    for (usize i = 0; i < NUM_GUESS; ++i) {
+        fprintf(stdout, "%s ", get_color_label(cell.guessed_colors[i]));
+    }
+
+    fprintf(stdout, "| correct: %llu, matched: %llu |\n", cell.correct, cell.matched);
+}
+
+void display_progress(void) {
+    for (usize i = 0; i < global_table.tries; ++i) {
+        print_cell(global_table.table[i]);
+    }
 }
 
 u64 num_colors(void) {
@@ -114,10 +155,6 @@ bool player_guess(Color guess_buffer[NUM_GUESS]) {
 }
 
 i32 main(void) {
-    Arena arena;    
-
-    arena_init(&arena);
-
     Color secret[NUM_GUESS];
 
     secret_init(secret);
@@ -127,10 +164,6 @@ i32 main(void) {
     Color guess_buffer[NUM_GUESS];
 
     player_guess(guess_buffer);
-
-    for (usize i = 0; i < NUM_GUESS; ++i) {
-        fprintf(stdout, "%s ", get_color_label(guess_buffer[i]));
-    }
 
     u64 correct = 0;
     u64 matched = 0;
@@ -153,9 +186,11 @@ i32 main(void) {
         }
     }
 
-    fprintf(stdout, "\nmatched: %llu, correct: %llu", matched, correct);
+    push_guess(guess_buffer, correct, matched);
+    push_guess(guess_buffer, correct + 1, matched);
+    push_guess(guess_buffer, correct + 2, matched);
 
-    arena_deinit(&arena);
+    display_progress();
 
     return 0;
 }
