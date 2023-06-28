@@ -32,7 +32,7 @@ To guess you simply type your four colors into the terminal, seperated by space 
 | cyan black red green       | correct: 1, matched: 0
 +----------------------------+
 | magenta yellow red white   | correct: 2, matched: 2
-+---------------------------:-+
++----------------------------+
 Your guess(4 colors): magenta white red yellow
 ```
 
