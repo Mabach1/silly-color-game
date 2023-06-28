@@ -130,6 +130,7 @@ bool check_input(String input, StringArr inputs, usize guessed) {
     return false;
 }
 
+#if 1
 bool player_guess(Color guess_buffer[NUM_GUESS]) {
     Arena scratch; 
 
@@ -159,6 +160,37 @@ bool player_guess(Color guess_buffer[NUM_GUESS]) {
 
     return true;
 }
+#else
+bool player_guess(Color guess_buffer[NUM_GUESS]) {
+    Arena scratch; 
+
+    arena_init(&scratch);
+
+    StringArr inputs = stringarr_alloc(&scratch, NUM_GUESS);
+
+    for (usize i = 0; i < NUM_GUESS; ++i) {
+        fprintf(stdout, "%llu. color: ", i + 1);
+
+        String input = string_from_stdin(&scratch);
+
+        if (!check_input(input, inputs, i)) {
+            fprintf(stdout, "Error: Incorrect input!\n");
+            --i;
+            continue;
+        }
+
+        stringarr_push(&inputs, input);
+    }
+
+    for (usize i = 0; i < NUM_GUESS; ++i) {
+        guess_buffer[i] = get_color_index(inputs.arr[i]);
+    }
+
+    arena_deinit(&scratch);
+
+    return true;
+}
+#endif
 
 void game_over(Color secret[]) {
     ProgressCell *current_cell = &global_table.table[global_table.tries - 1];
