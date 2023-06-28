@@ -55,15 +55,32 @@ void hint(const Color *secret) {
     for (usize i = 0; i < NUM_GUESS; ++i) {
         fprintf(stdout, "%s ", get_color_label(secret[i]));
     }
+    fprintf(stdout, "\n");
 }
 
 usize get_color_index(String label) {
-    for (Color color = 0; color < Undefined; ++color) {
+    for (Color color = 0; color < num_colors(); ++color) {
         if (string_equal(label, string_str_lit(get_color_label(color)))) {
             return color;
         }
     }
     return Undefined;
+}
+
+bool check_input(String input, StringArr inputs, usize guessed) {
+    for (usize i = 0; i < guessed; ++i) {
+        if (string_equal(input, inputs.arr[i])) {
+            return false;
+        }
+    }
+
+    for (Color color = 0; color < num_colors(); ++color) {
+        if (string_equal(input, string_str_lit(get_color_label(color)))) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool player_guess(Color guess_buffer[NUM_GUESS]) {
@@ -78,10 +95,11 @@ bool player_guess(Color guess_buffer[NUM_GUESS]) {
 
         String input = string_from_stdin(&scratch);
 
-        // TODO:
-        // if (!check_input()) {
-
-        // }
+        if (!check_input(input, inputs, i)) {
+            fprintf(stdout, "Error: Incorrect input!\n");
+            --i;
+            continue;
+        }
 
         stringarr_push(&inputs, input);
     }
@@ -113,6 +131,9 @@ i32 main(void) {
     for (usize i = 0; i < NUM_GUESS; ++i) {
         fprintf(stdout, "%s ", get_color_label(guess[i]));
     }
+
+    // TODO:
+    // calculate the mathced and correct and pushed them into the global array
 
     arena_deinit(&arena);
 
