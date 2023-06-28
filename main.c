@@ -1,6 +1,7 @@
 #include "base/base.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #define _HINT
 
@@ -34,6 +35,32 @@ const char *get_color_label(Color color) {
     }
 
     return "undefined";
+}
+
+u64 num_colors(void) {
+    u64 result = 0;
+
+    for (Color color = 0; color < Undefined; ++color) {
+        ++result;
+    }
+
+    return result;
+}
+
+const usize row_max_len(void) {
+    usize result = 0;
+
+    usize sizes[NUM_GUESS] = { 0 };
+
+    for (usize i = 0; i < NUM_GUESS; ++i) {
+        for (Color color = 0; color < num_colors() - 1; ++color) {
+            if (strlen(get_color_label(color + 1)) > strlen(get_color_label(color)) && sizes[i] != strlen(get_color_label(color + 1))) {
+                sizes[i] = strlen(get_color_label((color + 1)));
+            }
+        }
+    }
+
+    return result;
 }
 
 typedef struct {
@@ -78,16 +105,6 @@ void display_progress(void) {
     }
 }
 
-u64 num_colors(void) {
-    u64 result = 0;
-
-    for (Color color = 0; color < Undefined; ++color) {
-        ++result;
-    }
-
-    return result;
-}
-
 void secret_init(Color secret_buffer[NUM_GUESS]) {
     u64 random_numbers[NUM_GUESS];
 
@@ -130,7 +147,6 @@ bool check_input(String input, StringArr inputs, usize guessed) {
     return false;
 }
 
-#if 1
 void player_guess(Color guess_buffer[NUM_GUESS]) {
     Arena scratch; 
 
@@ -168,37 +184,6 @@ void player_guess(Color guess_buffer[NUM_GUESS]) {
 
     arena_deinit(&scratch);
 }
-#else
-bool player_guess(Color guess_buffer[NUM_GUESS]) {
-    Arena scratch; 
-
-    arena_init(&scratch);
-
-    StringArr inputs = stringarr_alloc(&scratch, NUM_GUESS);
-
-    for (usize i = 0; i < NUM_GUESS; ++i) {
-        fprintf(stdout, "%llu. color: ", i + 1);
-
-        String input = string_from_stdin(&scratch);
-
-        if (!check_input(input, inputs, i)) {
-            fprintf(stdout, "Error: Incorrect input!\n");
-            --i;
-            continue;
-        }
-
-        stringarr_push(&inputs, input);
-    }
-
-    for (usize i = 0; i < NUM_GUESS; ++i) {
-        guess_buffer[i] = get_color_index(inputs.arr[i]);
-    }
-
-    arena_deinit(&scratch);
-
-    return true;
-}
-#endif
 
 void game_over(Color secret[]) {
     ProgressCell *current_cell = &global_table.table[global_table.tries - 1];
@@ -227,6 +212,12 @@ void game_over(Color secret[]) {
 }
 
 i32 main(void) {
+    row_max_len();
+
+    return 0;
+
+    /*---------------------------------------*/
+
     Color secret[NUM_GUESS];
 
     secret_init(secret);
