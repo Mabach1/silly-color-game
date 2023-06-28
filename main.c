@@ -83,6 +83,7 @@ typedef struct {
     Color guessed_colors[NUM_GUESS];
     u64 correct;
     u64 matched;
+    bool head;
 } ProgressCell;
 
 typedef struct {
@@ -95,6 +96,8 @@ ProgressTable global_table = { .tries = 0 };
 void push_guess(Color guess[], u64 correct, u64 matched) {
     ProgressCell currect_cell;
 
+    currect_cell.head = 0 == global_table.tries ? true : false;
+
     currect_cell.correct = correct;
     currect_cell.matched = matched;
 
@@ -105,14 +108,38 @@ void push_guess(Color guess[], u64 correct, u64 matched) {
     global_table.table[global_table.tries++] = currect_cell;
 }
 
+void draw_border(usize len) {
+    fprintf(stdout, "+");
+    for (usize i = 0; i < len; ++i) {
+        fprintf(stdout, "-");
+    }
+    fprintf(stdout, "+\n");
+}
+
 void print_cell(ProgressCell cell) {
+    if (cell.head) {
+        draw_border(row_max_len() + (NUM_GUESS) + 1);
+    }
+    
+    usize row_len = 0;
+
+    for (usize i = 0; i < NUM_GUESS; ++i) {
+        row_len += strlen(get_color_label(cell.guessed_colors[i]));
+    }
+
     fprintf(stdout, "| ");
 
     for (usize i = 0; i < NUM_GUESS; ++i) {
         fprintf(stdout, "%s ", get_color_label(cell.guessed_colors[i]));
     }
 
-    fprintf(stdout, "| correct: %llu, matched: %llu |\n", cell.correct, cell.matched);
+    for (usize i = 0; i < row_max_len() - row_len; ++i) {
+        fprintf(stdout, " ");
+    }
+
+    fprintf(stdout, "| correct: %llu, matched: %llu \n", cell.correct, cell.matched);
+
+    draw_border(row_max_len() + (NUM_GUESS) + 1);
 }
 
 void display_progress(void) {
@@ -206,13 +233,13 @@ void game_over(Color secret[]) {
 
     bool over = false;
 
-    if (global_table.tries >= NUM_TRIES) {
-        fprintf(stdout, "You loss :(");
+    if (NUM_GUESS == current_cell->correct) {
+        fprintf(stdout, "\n You won :) \n");
         over = true;
     }
 
-    if (NUM_GUESS == current_cell->correct) {
-        fprintf(stdout, "You won :)");
+    if (global_table.tries >= NUM_TRIES && !over) {
+        fprintf(stdout, "\n You loss :( \n");
         over = true;
     }
 
